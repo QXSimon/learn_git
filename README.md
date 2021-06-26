@@ -1,3 +1,5 @@
 # learn_git
 
-> Al of me
+> All of me
+> learn java course repository
+> time.geek
