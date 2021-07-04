@@ -1,21 +1,21 @@
-##　homework01
+#　homework01
 
 **1.（选做）**使用 GCLogAnalysis.java 自己演练一遍串行 / 并行 /CMS/G1 的案例。
 
-
-java -XX:+PrintGCDetails GCLogAnalysis   
-
-java -XX:+PrintGCDetails -Xmx1g -Xms1g GCLogAnalysis   
+```bash
 java -XX:+PrintGCDetails -XX:+PrintGCDateStamps -Xmx1g -Xms1g GCLogAnalysis
 //打印日志到文件,则控制台不会输出信息
 java -XX:+PrintGCDetails -XX:+PrintGCDateStamps -Xloggc:gc.demo.log -Xmx1g -Xms1g GCLogAnalysis
+```
 
-Allocation Failure 内存分配失败
-PCYoungGC, Full GC,
+
+
 
 ### 分析
+```bash
 java -XX:+PrintGCDetails -XX:+PrintGCDateStamps -Xmx512m -Xms512m GCLogAnalysis
-
+```
+```log
 YoungGC: 2021-07-03T13:09:45.426+0800: 0.101: [GC (Allocation Failure) [PSYoungGen: 131584K->21502K(153088K)] 131584K->40958K(502784K), 0.0055120 secs] [Times: user=0.02 sys=0.03, real=0.01 secs]
 
 2021-07-03T13:09:45.426+0800: 0.101: 发生GC时间
@@ -28,34 +28,34 @@ YoungGC: 2021-07-03T13:09:45.426+0800: 0.101: [GC (Allocation Failure) [PSYoungG
 Full GC
 2021-07-03T13:09:45.651+0800: 0.326: [Full GC (Ergonomics) [PSYoungGen: 22566K->0K(116736K)] [ParOldGen: 321933K->247421K(349696K)] 344500K->247421K(466432K), [Metaspace: 2720K->2720K(1056768K)], 0.0416356 secs] [Times: user=0.22 sys=0.01, real=0.04 secs]
 Meta区(持久代): [Metaspace: 2720K->2720K(1056768K)]
+```
 
-Young GC 一般指Young区GC, 有时也叫Minor GC, 小型GC 
-Full GC 指OLd 区加上Young区的GC, 有时也叫Major GC, 大型GC
 
 ####　-XX:+UseSerialGC 串行化GC
 DefNew,也是Young区的GC ,只不名字不一样而已.
+```bash
 java -XX:+PrintGCDetails -XX:+PrintGCDateStamps -Xmx1g -Xms1g -XX:+UseSerialGC GCLogAnalysis
-
+```
+```log
 年轻代GC 
 2021-07-03T21:50:52.558+0800: [GC (Allocation Failure) 2021-07-03T21:50:52.558+0800: [DefNew: 314560K->34942K(314560K), 0.0372303 secs] 849479K->653970K(1013632K), 0.0372667 secs] [Times: user=0.01 sys=0.02, real=0.03 secs] 
 
 年轻代GC 并且 老年代GC
 2021-07-03T21:50:52.627+0800: [GC (Allocation Failure) 2021-07-03T21:50:52.627+0800: [DefNew: 314558K->314558K(314560K), 0.0000160 secs]2021-07-03T21:50:52.627+0800: [Tenured: 619027K->379654K(699072K), 0.0458442 secs] 933586K->379654K(1013632K), [Metaspace: 2720K->2720K(1056768K)], 0.0459183 secs] [Times: user=0.05 sys=0.00, real=0.04 secs] 
+```
 
 ####　并行化GC, -XX:UseParallelGC, JDK8 默认就是并行GC 
-> $ java -XX:+PrintGCDetails -XX:+PrintGCDateStamps -Xmx1g -Xms1g -XX:+UseParallelGC GCLogAnalysis                                                                                                                                                            [±main ●●]
-
+```bash
+$ java -XX:+PrintGCDetails -XX:+PrintGCDateStamps -Xmx1g -Xms1g -XX:+UseParallelGC GCLogAnalysis                                                                                                                                                            [±main ●●]
+```
 堆内存增加后,比如从-Xmx1g -> -Xmx4g, 结果会GC的频率会降低,很久才会执行一次,同时单次GC的时间变长.因为内存变大了嘛.
-
-#### 在不配置Xms的情况下,观察Full GC 与Young GC, 还有内存分配
-
-因为不配置Xms寻,堆内存初始值比较小,所以GC的频率提高,Full GC变多
-多几次GC后,堆内存慢慢提升到最大值Xmx
 
 
 #### CMS GC, -XX:+UseConcMarkSweepGC 
-> $ java -XX:+PrintGCDetails -XX:+PrintGCDateStamps -Xmx1g -Xms1g -XX:+UseConcMarkSweepGC GCLogAnalysis                                                                                                                                                       [±main ●●]
-
+```bash
+$ java -XX:+PrintGCDetails -XX:+PrintGCDateStamps -Xmx1g -Xms1g -XX:+UseConcMarkSweepGC GCLogAnalysis                                                                                                                                                       [±main ●●]
+```
+```log
 年轻代GC 
 2021-07-03T22:16:03.212+0800: [GC (Allocation Failure) 2021-07-03T22:16:03.212+0800: [ParNew: 314558K->34944K(314560K), 0.0364094 secs] 604525K->400962K(1013632K), 0.0364566 secs] [Times: user=0.25 sys=0.03, real=0.04 secs]
 CMS 初始化标记, Old区使用内存366018K,Old区容量699072K,整个堆内存目前使用401162K,容量1013632K
@@ -85,12 +85,16 @@ CMS 最终标记
 2021-07-03T22:16:03.540+0800: [CMS-concurrent-reset-start]
 并发重置执行结束
 2021-07-03T22:16:03.543+0800: [CMS-concurrent-reset: 0.002/0.002 secs] [Times: user=0.00 sys=0.01, real=0.00 secs] 
+```
 
 #### CMS 提升内存到4g
 发生GC数变少,而且只有ParNew GC
 
 #### G1 GC, -XX:+UseG1GC
+```log
 $ java -XX:+PrintGCDetails -XX:+PrintGCDateStamps -Xmx4g -Xms4g -XX:+UseG1GC GCLogAnalysis
+```
+```log
 正在运行....
 
 Young GC
@@ -164,9 +168,12 @@ garbage-first heap   total 1048576K, used 771099K [0x00000000c0000000, 0x0000000
 region size 1024K, 198 young (202752K), 7 survivors (7168K)
 Metaspace       used 2727K, capacity 4486K, committed 4864K, reserved 1056768K
 class space    used 286K, capacity 386K, committed 512K, reserved 1048576K
+```
 
-####　太复杂了,使用PrintGC,代替 PrintGCDetails, 这样精简输出
 
+####　使用PrintGC,代替 PrintGCDetails
+
+```log
 正在运行....
 最开始G1的暂停, Young GC
 2021-07-03T22:41:06.041+0800: [GC pause (G1 Evacuation Pause) (young) 64753K->25154K(1024M), 0.0038106 secs]
@@ -198,89 +205,6 @@ class space    used 286K, capacity 386K, committed 512K, reserved 1048576K
 混合GC 
 2021-07-03T22:41:06.463+0800: [GC pause (G1 Evacuation Pause) (mixed) 571M->484M(1024M), 0.0094187 secs]
 2021-07-03T22:41:06.472+0800: [GC pause (G1 Humongous Allocation) (young) (initial-mark) 484M->483M(1024M), 0.0022017 secs]
-2021-07-03T22:41:06.475+0800: [GC concurrent-root-region-scan-start]
-2021-07-03T22:41:06.475+0800: [GC concurrent-root-region-scan-end, 0.0001102 secs]
-2021-07-03T22:41:06.475+0800: [GC concurrent-mark-start]
-2021-07-03T22:41:06.477+0800: [GC concurrent-mark-end, 0.0020821 secs]
-2021-07-03T22:41:06.477+0800: [GC remark, 0.0018561 secs]
-2021-07-03T22:41:06.479+0800: [GC cleanup 501M->497M(1024M), 0.0010051 secs]
-2021-07-03T22:41:06.480+0800: [GC concurrent-cleanup-start]
-2021-07-03T22:41:06.480+0800: [GC concurrent-cleanup-end, 0.0000149 secs]
-2021-07-03T22:41:06.521+0800: [GC pause (G1 Evacuation Pause) (young) 850M->562M(1024M), 0.0111586 secs]
-2021-07-03T22:41:06.535+0800: [GC pause (G1 Evacuation Pause) (mixed) 579M->475M(1024M), 0.0073058 secs]
-2021-07-03T22:41:06.548+0800: [GC pause (G1 Evacuation Pause) (mixed) 530M->443M(1024M), 0.0054724 secs]
-2021-07-03T22:41:06.554+0800: [GC pause (G1 Humongous Allocation) (young) (initial-mark) 445M->443M(1024M), 0.0028380 secs]
-2021-07-03T22:41:06.557+0800: [GC concurrent-root-region-scan-start]
-2021-07-03T22:41:06.557+0800: [GC concurrent-root-region-scan-end, 0.0001357 secs]
-2021-07-03T22:41:06.557+0800: [GC concurrent-mark-start]
-2021-07-03T22:41:06.559+0800: [GC concurrent-mark-end, 0.0013930 secs]
-2021-07-03T22:41:06.559+0800: [GC remark, 0.0019453 secs]
-2021-07-03T22:41:06.561+0800: [GC cleanup 458M->451M(1024M), 0.0013831 secs]
-2021-07-03T22:41:06.562+0800: [GC concurrent-cleanup-start]
-2021-07-03T22:41:06.562+0800: [GC concurrent-cleanup-end, 0.0000185 secs]
-2021-07-03T22:41:06.608+0800: [GC pause (G1 Evacuation Pause) (young)-- 850M->611M(1024M), 0.0095886 secs]
-2021-07-03T22:41:06.619+0800: [GC pause (G1 Evacuation Pause) (mixed) 623M->536M(1024M), 0.0124329 secs]
-2021-07-03T22:41:06.637+0800: [GC pause (G1 Evacuation Pause) (mixed) 594M->550M(1024M), 0.0039846 secs]
-2021-07-03T22:41:06.642+0800: [GC pause (G1 Humongous Allocation) (young) (initial-mark) 553M->551M(1024M), 0.0024041 secs]
-2021-07-03T22:41:06.644+0800: [GC concurrent-root-region-scan-start]
-2021-07-03T22:41:06.644+0800: [GC concurrent-root-region-scan-end, 0.0001591 secs]
-2021-07-03T22:41:06.644+0800: [GC concurrent-mark-start]
-2021-07-03T22:41:06.646+0800: [GC concurrent-mark-end, 0.0018949 secs]
-2021-07-03T22:41:06.646+0800: [GC remark, 0.0019269 secs]
-2021-07-03T22:41:06.648+0800: [GC cleanup 569M->564M(1024M), 0.0006303 secs]
-2021-07-03T22:41:06.649+0800: [GC concurrent-cleanup-start]
-2021-07-03T22:41:06.649+0800: [GC concurrent-cleanup-end, 0.0000187 secs]
-2021-07-03T22:41:06.682+0800: [GC pause (G1 Evacuation Pause) (young) 849M->611M(1024M), 0.0091826 secs]
-2021-07-03T22:41:06.694+0800: [GC pause (G1 Evacuation Pause) (mixed) 635M->525M(1024M), 0.0061152 secs]
-2021-07-03T22:41:06.707+0800: [GC pause (G1 Evacuation Pause) (mixed) 586M->475M(1024M), 0.0075494 secs]
-2021-07-03T22:41:06.715+0800: [GC pause (G1 Humongous Allocation) (young) (initial-mark) 476M->475M(1024M), 0.0015815 secs]
-2021-07-03T22:41:06.717+0800: [GC concurrent-root-region-scan-start]
-2021-07-03T22:41:06.717+0800: [GC concurrent-root-region-scan-end, 0.0001318 secs]
-2021-07-03T22:41:06.717+0800: [GC concurrent-mark-start]
-2021-07-03T22:41:06.718+0800: [GC concurrent-mark-end, 0.0016145 secs]
-2021-07-03T22:41:06.718+0800: [GC remark, 0.0015762 secs]
-2021-07-03T22:41:06.720+0800: [GC cleanup 487M->486M(1024M), 0.0006122 secs]
-2021-07-03T22:41:06.721+0800: [GC concurrent-cleanup-start]
-2021-07-03T22:41:06.721+0800: [GC concurrent-cleanup-end, 0.0000184 secs]
-2021-07-03T22:41:06.760+0800: [GC pause (G1 Evacuation Pause) (young)-- 845M->620M(1024M), 0.0098953 secs]
-2021-07-03T22:41:06.772+0800: [GC pause (G1 Evacuation Pause) (mixed) 635M->554M(1024M), 0.0095541 secs]
-2021-07-03T22:41:06.790+0800: [GC pause (G1 Evacuation Pause) (mixed) 615M->563M(1024M), 0.0048608 secs]
-2021-07-03T22:41:06.795+0800: [GC pause (G1 Humongous Allocation) (young) (initial-mark) 564M->562M(1024M), 0.0022065 secs]
-2021-07-03T22:41:06.798+0800: [GC concurrent-root-region-scan-start]
-2021-07-03T22:41:06.798+0800: [GC concurrent-root-region-scan-end, 0.0001093 secs]
-2021-07-03T22:41:06.798+0800: [GC concurrent-mark-start]
-2021-07-03T22:41:06.800+0800: [GC concurrent-mark-end, 0.0018725 secs]
-2021-07-03T22:41:06.800+0800: [GC remark, 0.0020057 secs]
-2021-07-03T22:41:06.802+0800: [GC cleanup 582M->575M(1024M), 0.0006602 secs]
-2021-07-03T22:41:06.803+0800: [GC concurrent-cleanup-start]
-2021-07-03T22:41:06.803+0800: [GC concurrent-cleanup-end, 0.0000183 secs]
-2021-07-03T22:41:06.832+0800: [GC pause (G1 Evacuation Pause) (young) 823M->618M(1024M), 0.0093043 secs]
-2021-07-03T22:41:06.844+0800: [GC pause (G1 Evacuation Pause) (mixed) 649M->538M(1024M), 0.0072773 secs]
-2021-07-03T22:41:06.857+0800: [GC pause (G1 Evacuation Pause) (mixed) 589M->483M(1024M), 0.0079206 secs]
-2021-07-03T22:41:06.866+0800: [GC pause (G1 Humongous Allocation) (young) (initial-mark) 485M->484M(1024M), 0.0062303 secs]
-2021-07-03T22:41:06.872+0800: [GC concurrent-root-region-scan-start]
-2021-07-03T22:41:06.872+0800: [GC concurrent-root-region-scan-end, 0.0001406 secs]
-2021-07-03T22:41:06.872+0800: [GC concurrent-mark-start]
-2021-07-03T22:41:06.874+0800: [GC concurrent-mark-end, 0.0015609 secs]
-2021-07-03T22:41:06.874+0800: [GC remark, 0.0018639 secs]
-2021-07-03T22:41:06.876+0800: [GC cleanup 498M->496M(1024M), 0.0010006 secs]
-2021-07-03T22:41:06.877+0800: [GC concurrent-cleanup-start]
-2021-07-03T22:41:06.877+0800: [GC concurrent-cleanup-end, 0.0000190 secs]
-2021-07-03T22:41:06.916+0800: [GC pause (G1 Evacuation Pause) (young)-- 855M->651M(1024M), 0.0091529 secs]
-2021-07-03T22:41:06.927+0800: [GC pause (G1 Evacuation Pause) (mixed) 668M->582M(1024M), 0.0102430 secs]
-2021-07-03T22:41:06.944+0800: [GC pause (G1 Evacuation Pause) (mixed) 652M->603M(1024M), 0.0043951 secs]
-2021-07-03T22:41:06.949+0800: [GC pause (G1 Humongous Allocation) (young) (initial-mark) 611M->607M(1024M), 0.0025225 secs]
-2021-07-03T22:41:06.952+0800: [GC concurrent-root-region-scan-start]
-2021-07-03T22:41:06.952+0800: [GC concurrent-root-region-scan-end, 0.0000934 secs]
-2021-07-03T22:41:06.952+0800: [GC concurrent-mark-start]
-2021-07-03T22:41:06.954+0800: [GC concurrent-mark-end, 0.0019062 secs]
-2021-07-03T22:41:06.954+0800: [GC remark, 0.0014878 secs]
-2021-07-03T22:41:06.956+0800: [GC cleanup 620M->608M(1024M), 0.0005538 secs]
-2021-07-03T22:41:06.956+0800: [GC concurrent-cleanup-start]
-2021-07-03T22:41:06.956+0800: [GC concurrent-cleanup-end, 0.0000207 secs]
-2021-07-03T22:41:06.983+0800: [GC pause (G1 Evacuation Pause) (young) 844M->654M(1024M), 0.0089922 secs]
-2021-07-03T22:41:06.996+0800: [GC pause (G1 Evacuation Pause) (mixed) 682M->567M(1024M), 0.0063480 secs]
-2021-07-03T22:41:07.008+0800: [GC pause (G1 Evacuation Pause) (mixed) 620M->508M(1024M), 0.0076046 secs]
 
 调整内存到256m后,出现了Full GC,并OOM
 Full GC
@@ -293,18 +217,7 @@ at GCLogAnalysis.main(GCLogAnalysis.java:27)
 
 
 执行结束!共生成对象次数:17746
-
+```
 升级到4g后 ,只发生了YoungGC, GC频率降低
 使用G1 GC时,一定要防止Full GC, G1GC退化成串行化GC 
 
-#### 可视化GC 日志工具
-1.GCEasy
-在线的,gceasy.io
-把GC 日志复制上去就可以了
-
-2.GCViewer
-是一个jar包,展示的信息没有GCEasy详细和好看
-
-#### 各种GC 有什么特点和使用场景?
-自己多弄些场景,把日志看习惯,都会了.
-与别人沟通和自己分析时,就妻得心应手.
