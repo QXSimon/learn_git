@@ -1,5 +1,7 @@
 package inbound;
 
+import filter.HeaderHttpRequestFilter;
+import filter.HttpRequestFilter;
 import io.netty.channel.ChannelHandlerContext;
 import io.netty.channel.ChannelInboundHandlerAdapter;
 import io.netty.handler.codec.http.*;
@@ -7,6 +9,8 @@ import io.netty.util.ReferenceCountUtil;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import outbound.HttpOutboundHandler;
+
+import java.util.List;
 
 
 /**
@@ -19,12 +23,13 @@ public class HttpInboundHandler extends ChannelInboundHandlerAdapter {
 
     private static Logger logger = LoggerFactory.getLogger(HttpInboundHandler.class);
     private HttpOutboundHandler outboundHandler;
+    private HttpRequestFilter filter = new HeaderHttpRequestFilter();
 
-    private final String proxyServer;
+    private final List<String> proxyServers;
 
-    public HttpInboundHandler(String proxyServer) {
-        this.proxyServer = proxyServer;
-        this.outboundHandler=new HttpOutboundHandler(proxyServer);
+    public HttpInboundHandler(List<String> proxyServers) {
+        this.proxyServers = proxyServers;
+        this.outboundHandler=new HttpOutboundHandler(proxyServers);
     }
 
     @Override
@@ -36,7 +41,7 @@ public class HttpInboundHandler extends ChannelInboundHandlerAdapter {
     public void channelRead(ChannelHandlerContext ctx, Object msg) throws Exception {
         try{
             FullHttpRequest fullRequest = (FullHttpRequest)msg;
-            outboundHandler.handle(fullRequest,ctx);
+            outboundHandler.handle(fullRequest,ctx,filter);
         }catch (Exception e){
             e.printStackTrace();
         }finally{

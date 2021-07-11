@@ -1,5 +1,7 @@
 package inbound;
 
+import filter.HeaderHttpRequestFilter;
+import filter.HttpRequestFilter;
 import io.netty.channel.ChannelHandlerContext;
 import io.netty.channel.ChannelInboundHandlerAdapter;
 import io.netty.handler.codec.http.*;
@@ -19,6 +21,7 @@ public class HttpInboundHandler extends ChannelInboundHandlerAdapter {
 
     private static Logger logger = LoggerFactory.getLogger(HttpInboundHandler.class);
     private HttpOutboundHandler outboundHandler;
+    private HttpRequestFilter filter = new HeaderHttpRequestFilter();
 
     private final String proxyServer;
 
@@ -36,7 +39,7 @@ public class HttpInboundHandler extends ChannelInboundHandlerAdapter {
     public void channelRead(ChannelHandlerContext ctx, Object msg) throws Exception {
         try{
             FullHttpRequest fullRequest = (FullHttpRequest)msg;
-            outboundHandler.handle(fullRequest,ctx);
+            outboundHandler.handle(fullRequest,ctx,filter);
         }catch (Exception e){
             e.printStackTrace();
         }finally{

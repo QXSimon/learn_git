@@ -36,7 +36,7 @@ public class SocketHttpServer {
             printWriter.println("HTTP/1.1 200 OK");
             printWriter.println("Content-type:text/html;charset=utf-8");
 
-            String body = "Hello, socket http server 8801 support service homework02";
+            String body = "Hello, socket http server 8801 support service";
             printWriter.println("Content-Length:"+body.getBytes().length);
             printWriter.println();
             printWriter.println(body);
